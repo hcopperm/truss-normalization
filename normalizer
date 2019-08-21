@@ -12,7 +12,7 @@ def convert_time_to_iso_8601(timestamp)
   rezoned_timestamp.iso8601.to_s
 end
 
-def convert_zipcode(zipcode)
+def zero_pad_zipcode(zipcode)
   if zipcode.length < 5
     num_of_zeroes = 5 - zipcode.length
     num_of_zeroes.times do
@@ -22,7 +22,7 @@ def convert_zipcode(zipcode)
   zipcode
 end
 
-def convert_fullname(fullname)
+def upcase_fullname(fullname)
   fullname.upcase
 end
 
@@ -53,19 +53,18 @@ def get_total_duration(foo_duration, bar_duration)
   foo_duration + bar_duration
 end
 
-def parse_csv(input_file)
+def normalize_csv(unnormalized_input)
   csv_string = CSV.generate do |output_csv|
     output_csv << ["Timestamp", "Address", "ZIP", "FullName", "FooDuration", "BarDuration", "TotalDuration", "Notes"]
-    CSV.parse(input_file, headers: true) do |row|
+    CSV.parse(unnormalized_input, headers: true) do |row|
       row.each do |header, value|
         row[header] = validate_text(value)
       end
-      # STILL NEED TIMEZONE
       begin
         normalized_timestamp = convert_time_to_iso_8601(row["Timestamp"])
         normalized_address = row["Address"]
-        normalized_zip = convert_zipcode(row["ZIP"])
-        normalized_fullname = convert_fullname(row["FullName"])
+        normalized_zip = zero_pad_zipcode(row["ZIP"])
+        normalized_fullname = upcase_fullname(row["FullName"])
         normalized_foo_duration = calculate_total_seconds(row["FooDuration"])
         normalized_bar_duration = calculate_total_seconds(row["BarDuration"])
         normalized_total_duration = normalized_foo_duration + normalized_bar_duration
@@ -88,4 +87,4 @@ def parse_csv(input_file)
   puts csv_string
 end
 
-parse_csv($stdin.read)
+normalize_csv($stdin.read)
